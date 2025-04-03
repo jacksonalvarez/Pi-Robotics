@@ -3,6 +3,7 @@ import time
 import RPi.GPIO as GPIO
 import cv2
 import numpy as np
+from picamera2 import Picamera2
 
 # Set up GPIO
 GPIO.setmode(GPIO.BCM)
@@ -37,8 +38,10 @@ pygame.init()
 screen = pygame.display.set_mode((400, 300))
 pygame.display.set_caption('Servo Control')
 
-# Initialize the camera
-cap = cv2.VideoCapture(0)  # 0 for the default Pi Camera, change it if using a different one
+# Initialize the camera using picamera2
+picam2 = Picamera2()
+picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))  # Set resolution to 640x480
+picam2.start()
 
 # Load the Haar Cascade for face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -56,12 +59,8 @@ try:
                     running = False
 
         # Capture video frame from the camera
-        ret, frame = cap.read()
+        frame = picam2.capture_array()
 
-        if not ret:
-            print("Failed to grab frame")
-            break
-        
         # Convert the frame to grayscale (required for face detection)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -72,7 +71,7 @@ try:
             # Get the coordinates of the first detected face
             (x, y, w, h) = faces[0]
             # Draw a rectangle around the face (optional, for visualization)
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
             # Calculate the center of the face
             face_center_x = x + w / 2
@@ -108,6 +107,6 @@ finally:
     servo_1_pwm.stop()
     servo_2_pwm.stop()
     GPIO.cleanup()
-    cap.release()
+    picam2.stop()
     cv2.destroyAllWindows()
     pygame.quit()
