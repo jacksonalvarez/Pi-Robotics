@@ -1,8 +1,8 @@
-import RPi.GPIO as GPIO
+import pygame
 import time
-import keyboard
+import RPi.GPIO as GPIO
 
-# Set up GPIO mode
+# Set up GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -28,41 +28,50 @@ def set_servo_angle(servo_pwm, angle):
     duty_cycle = (angle / 18) + 2
     servo_pwm.ChangeDutyCycle(duty_cycle)
 
-# Function to stop PWM signals and clean up GPIO
-def cleanup():
-    servo_1_pwm.stop()
-    servo_2_pwm.stop()
-    GPIO.cleanup()
+# Initialize pygame
+pygame.init()
 
-# Main loop for testing the servos with keybinds
+# Set up the display (even though we won't show anything on screen)
+screen = pygame.display.set_mode((400, 300))
+pygame.display.set_caption('Servo Control')
+
+# Main loop
+running = True
 try:
-    print("Press 'w' to rotate Servo 1 up, 's' to rotate Servo 1 down")
-    print("Press 'a' to rotate Servo 2 up, 'd' to rotate Servo 2 down")
-    print("Press 'q' to quit.")
-    
-    while True:
-        if keyboard.is_pressed('w'):  # Rotate Servo 1 up
-            print("Rotating Servo 1 up")
-            set_servo_angle(servo_1_pwm, 90)  # Rotate 90 degrees
-            time.sleep(0.5)
-        elif keyboard.is_pressed('s'):  # Rotate Servo 1 down
-            print("Rotating Servo 1 down")
-            set_servo_angle(servo_1_pwm, 0)  # Rotate 0 degrees (down)
-            time.sleep(0.5)
-        elif keyboard.is_pressed('a'):  # Rotate Servo 2 up
-            print("Rotating Servo 2 up")
-            set_servo_angle(servo_2_pwm, 90)  # Rotate 90 degrees
-            time.sleep(0.5)
-        elif keyboard.is_pressed('d'):  # Rotate Servo 2 down
-            print("Rotating Servo 2 down")
-            set_servo_angle(servo_2_pwm, 0)  # Rotate 0 degrees (down)
-            time.sleep(0.5)
-        elif keyboard.is_pressed('q'):  # Quit the program
-            print("Exiting program...")
-            break
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w:  # Rotate Servo 1 up
+                    print("Rotating Servo 1 up")
+                    set_servo_angle(servo_1_pwm, 90)  # Rotate 90 degrees
+                    time.sleep(0.5)
+                elif event.key == pygame.K_s:  # Rotate Servo 1 down
+                    print("Rotating Servo 1 down")
+                    set_servo_angle(servo_1_pwm, 0)  # Rotate 0 degrees
+                    time.sleep(0.5)
+                elif event.key == pygame.K_a:  # Rotate Servo 2 up
+                    print("Rotating Servo 2 up")
+                    set_servo_angle(servo_2_pwm, 90)  # Rotate 90 degrees
+                    time.sleep(0.5)
+                elif event.key == pygame.K_d:  # Rotate Servo 2 down
+                    print("Rotating Servo 2 down")
+                    set_servo_angle(servo_2_pwm, 0)  # Rotate 0 degrees
+                    time.sleep(0.5)
+                elif event.key == pygame.K_q:  # Quit the program
+                    print("Exiting program...")
+                    running = False
+
+        # You can add more event handling logic if needed
+        pygame.display.update()
 
 except KeyboardInterrupt:
     print("Program interrupted")
 
 finally:
-    cleanup()
+    # Cleanup GPIO settings
+    servo_1_pwm.stop()
+    servo_2_pwm.stop()
+    GPIO.cleanup()
+    pygame.quit()
