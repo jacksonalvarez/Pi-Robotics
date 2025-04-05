@@ -7,7 +7,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
 # Define the GPIO pins for the servo motors
-servo_1_pin = 13  # Changed to GPIO 13 for left-right movement
+servo_1_pin = 23  # Changed to GPIO 13 for left-right movement
 servo_2_pin = 12  # Kept the same as in original code
 servo_3_pin = 17  # Using the original servo_1_pin for the third motor
 
